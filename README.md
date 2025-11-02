@@ -93,7 +93,14 @@ The following symbols are defined:
   non-trivial setup/teardown rather than duplicating boilerplate
   in each individual test case.
 
-Existing code:
+## Coding conventions
+
+One tab per level of indent.  Unix line endings.
+Blank lines inside a block are still inside the block,
+and should be indented accordingly.
+
+## Existing code for reference
+
 - https://github.com/TOGoS/SG-P28/blob/orchestration-with-mqtt/src/main/ts/mqtt/MQTTLogger.ts wraps the ~jsr:@ymjacky/mqtt5@0.0.19~ library
   to provide a thin abstraction.  It may or may not be useful for this project.
 - https://github.com/TOGoS/SG-P28/blob/orchestration-with-mqtt/src/main/ts/sink/sinkspec.ts - parsing MQTT pseudo-URIs
