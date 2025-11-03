@@ -143,4 +143,20 @@ sudo usermod -aG docker $USER
 
 ### Open in Devcontainer
 
-This was messy. I'm not sure what steps were necessary. See DEVLOG.
+This was messy. I'm not sure what steps were necessary.
+
+Lessons:
+- Devcontainers in VS Code and in Cursor might work a little differently
+  w.r.r. how they expect Docker to be set up.
+- Cursor IDE may need you to have Docker Desktop installed,
+  whereas the VS Code extensions (which are similarly named but different)
+  seemed to work with docker within WSL without requiring Docker Desktop.
+- I am not totally sure about that last statement.  Some variables confuse matters:
+  - I didn't really know what I was doing when I got my [S38-S0021](https://github.com/TOGoS/Scratch38/tree/subtrees/s0021/master) devcontainer working.
+  - There was a problem with the Dockerfile (it was not creating `/home/deno`),
+    and that may have been the actual problem.
+  - Further research:
+    - See if Docker Desktop is installed on the PC where I have the Idris devcontainer working
+    - Uninstall Docker Desktop and see if you can get this working again in Cursor
+
+See [DEVLOG](./DEVLOG.md#2025-11-02t13) for more blathery confusion on the subject.
