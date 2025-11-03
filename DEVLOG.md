@@ -37,3 +37,15 @@ RUN mkdir /home/deno && chown deno:deno /home/deno
 It then loaded fine in VS Code.
 
 I then reloaded in Cursor. It works, now. Hooray!
+
+### Onward
+
+Cursor agent generated a bunch of stuff.  See commit log
+(currently at ba6d12a95d8c59adb629e143702884985db6b149).
+
+Then I ran out of Agent usage.  Very sad.
+
+Tab completion is helpful about half the time, though.
+And I definitely feel better with the hands-on approach.
+
+One complaint is: how do I type a literal tab without it thinking I want to accept its suggestion?
