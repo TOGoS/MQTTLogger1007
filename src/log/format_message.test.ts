@@ -76,9 +76,8 @@ Deno.test("formatMessageLine - encodes content with newlines", () => {
 	};
 	
 	const result = formatMessageLine(msg);
-	assertEquals(result, encode("logs/system\t-\tLine 1\n\tLine 2"));
 	// Content should have newlines replaced with newline+tab
-	const expectedContent = encode("Line 1\n\tLine 2");
+	assertEquals(result, encode("logs/system\t-\n\tLine 1\n\tLine 2"));
 });
 
 Deno.test("formatMessageLine - handles zero-length messages", () => {
@@ -90,7 +89,7 @@ Deno.test("formatMessageLine - handles zero-length messages", () => {
 	};
 	
 	const result = formatMessageLine(msg);
-	assertEquals(result, encode("empty/topic\t-\t"));
+	assertEquals(result, encode("empty/topic\t-"));
 });
 
 Deno.test("formatMessageLine - handles binary content", () => {
@@ -121,7 +120,7 @@ Deno.test("formatMessageLine - handles binary content with newlines", () => {
 	assertEquals(
 		result,
 		concatUint8Arrays(
-			encode("test/binary\t-\t"),
+			encode("test/binary\t-\n\t"),
 			new Uint8Array([0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x0a, 0x09, 0x57, 0x6f, 0x72, 0x6c, 0x64]),
 		),
 	);
@@ -164,14 +163,14 @@ const messageTestCases = [
 		value: encode("Line 1\nLine 2\nLine 3"),
 		retained: true,
 		description: "multi-line retained message",
-		expectedEncodedContent: encode("multi/line\tR\tLine 1\n\tLine 2\n\tLine 3"),
+		expectedEncodedContent: encode("multi/line\tR\n\tLine 1\n\tLine 2\n\tLine 3"),
 	},
 	{
 		path: "empty/value",
 		value: encode(""),
 		retained: false,
 		description: "empty message",
-		expectedEncodedContent: encode("empty/value\t-\t"), // No trailing tab needed when content is empty, but to keep things simple for now...
+		expectedEncodedContent: encode("empty/value\t-"), // No trailing tab needed when content is empty
 	},
 	{
 		path: "binary/data",
@@ -179,6 +178,13 @@ const messageTestCases = [
 		retained: false,
 		description: "binary message",
 		expectedEncodedContent: concatUint8Arrays(encode("binary/data\t-\t"), new Uint8Array([0x00, 0x01, 0x02, 0x03, 0x04])),
+	},
+	{
+		path: "binary/data/with/newlines",
+		value: new Uint8Array([0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x0a, 0x57, 0x6f, 0x72, 0x6c, 0x64]),
+		retained: false,
+		description: "binary message with newlines",
+		expectedEncodedContent: concatUint8Arrays(encode("binary/data/with/newlines\t-\n\t"), new Uint8Array([0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x0a, 0x09, 0x57, 0x6f, 0x72, 0x6c, 0x64])),
 	},
 ];
 

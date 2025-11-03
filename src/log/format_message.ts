@@ -79,7 +79,11 @@ function concatUint8Arrays(...arrays: Uint8Array[]): Uint8Array {
  */
 export function formatMessageLine(msg: MQTTMessage): Uint8Array {
 	const flags = formatFlags(msg.retained);
-	const prefix = `${msg.path}\t${flags}\t`;
+	const isEmpty = msg.value.length === 0;
+	const isMultiline = msg.value.indexOf(0x0a) !== -1;
+	const separator = isMultiline ? "\n\t" : isEmpty ? "" : "\t";
+	
+	const prefix = `${msg.path}\t${flags}${separator}`;
 	const encodedContent = encodeContent(msg.value);
 	
 	return concatUint8Arrays(encode(prefix), encodedContent);
