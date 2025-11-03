@@ -1,0 +1,28 @@
+{
+  "name": "MQTTLogger1007 Dev Container",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "workspaceFolder": "/workspace",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "deno.enable": true,
+        "deno.lint": true,
+        "deno.unstable": false,
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "denoland.vscode-deno",
+        "editor.formatOnSaveMode": "file"
+      },
+      "extensions": [
+        "denoland.vscode-deno"
+      ]
+    }
+  },
+  "remoteUser": "deno",
+  "features": {},
+  "mounts": [
+    "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached"
+  ]
+}
