@@ -47,11 +47,16 @@ Following the format line should be a comment (possibly multiple lines) that bri
 Timestamp lines indicate a timestamp at which the following messages
 were received, and is of the form `#ts ` + decimal integer giving the milliseconds since the epoch.
 
-Message lines are of one of two formats:
-- key + tab + flags + tab + encoded content, or
-- key + newline + tab + flags + tab + encoded content
+Logical message lines are of one of three formats,
+any of which (except for the empty content one)
+may actually span multiple 'physical' lines:
+- key + tab + flags + tab + encoded content
+- key + tab + flags + newline + tab + encoded content
+- key + tab + flags
 
-Content is encoded by replacing newlines with newline + tab.
+Content is encoded by replacing newlines with newline + tab,
+so that content continuation lines can be distinguished from
+new logical lines by starting with a tab character.
 
 The second format should be used for multi-line messages.
 since it will result in them appearing as originally received, but indented.
