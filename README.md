@@ -105,3 +105,54 @@ and should be indented accordingly.
   to provide a thin abstraction.  It may or may not be useful for this project.
 - https://github.com/TOGoS/SG-P28/blob/orchestration-with-mqtt/src/main/ts/sink/sinkspec.ts - parsing MQTT pseudo-URIs
 - https://github.com/TOGoS/SG-P28/blob/orchestration-with-mqtt/src/main/ts/sink/sinkspec.test.ts - Unit tests for same
+
+## Using Devcontainer with Cursor on Windows
+
+A trifecta of variables to interfere with one another!
+tl;dr: I couldn't get it working.
+
+### Installing WSL and a Linux distribution (if you're on Windows)
+
+Install WSL itself:
+
+```
+wsl.exe --install
+```
+
+Reboot...
+
+Install a Linux distro inside WSL.
+
+`wsl --list --online` to list options.
+
+I will go with good old Debian.
+
+`wsl --install Debian`
+
+You will likely be prompted to create a username/password.  Go ahead and do so.
+
+### Installing Docker
+
+```
+sudo apt update
+sudo apt install docker.io docker-cli
+
+# Add yourself to the docker group (TODO: verify that this makes the integration work)
+sudo usermod -aG docker $USER
+```
+
+### Open in Devcontainer
+
+> VS Code/Cursor automatically detects Docker in WSL when you're working
+> from a WSL path or have WSL integration enabled.
+
+Said some LLM.  But I HAVE NOT BEEN ABLE TO GET THIS TO WORK IN CURSOR.
+
+I can get it to work within WSL, but I have not gotten it to work
+within a Docker container within WSL or using Docker Desktop,
+which may be different.
+
+Note that this is a little bit different than in vanilla VS Code,
+where I did [at some point](https://github.com/TOGoS/Scratch38/tree/subtrees/s0021/master)
+get a devcontainer working, apparently running inside Docker
+inside WSL.  Cursor has its own, slightly different extensions for this.
