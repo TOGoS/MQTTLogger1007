@@ -50,6 +50,23 @@ export function formatFlags(retained: boolean): string {
 	return retained ? FLAG_RETAINED : FLAG_NONE;
 }
 
+const TE = new TextEncoder();
+function encode(text: string): Uint8Array {
+	return TE.encode(text);
+}
+
+function concatUint8Arrays(...arrays: Uint8Array[]): Uint8Array {
+	const totalLength = arrays.reduce((sum, arr) => sum + arr.length, 0);
+	const result = new Uint8Array(totalLength);
+	let offset = 0;
+	for (const arr of arrays) {
+		result.set(arr, offset);
+		offset += arr.length;
+	}
+	return result;
+}
+
+
 /**
  * Formats an MQTT message as a log line.
  * Format: `path + tab + flags + tab + encoded_content`
@@ -60,13 +77,10 @@ export function formatFlags(retained: boolean): string {
  * @param msg - MQTT message to format
  * @returns Formatted log line with text prefix and binary content
  */
-export function formatMessageLine(msg: MQTTMessage): FormattedLogLine {
+export function formatMessageLine(msg: MQTTMessage): Uint8Array {
 	const flags = formatFlags(msg.retained);
 	const prefix = `${msg.path}\t${flags}\t`;
 	const encodedContent = encodeContent(msg.value);
 	
-	return {
-		prefix,
-		content: encodedContent,
-	};
+	return concatUint8Arrays(encode(prefix), encodedContent);
 }

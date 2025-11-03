@@ -8,6 +8,12 @@ import {
 } from "./format_message.ts";
 import { LOG_FORMAT_IDENTIFIER } from "./format.ts";
 import type { MQTTMessage } from "../mqtt/message.ts";
+import { encodeContent } from "./encode.ts";
+
+const te = new TextEncoder();
+function encode(text: string): Uint8Array {
+	return te.encode(text);
+}
 
 Deno.test("formatIdentifierLine - returns format identifier with #format prefix", () => {
 	const result = formatIdentifierLine();
@@ -41,41 +47,38 @@ Deno.test("formatMessageLine - formats simple message correctly", () => {
 	const msg: MQTTMessage = {
 		timestamp: 1234567890000,
 		path: "sensors/temperature",
-		value: new TextEncoder().encode("25.5"),
+		value: encode("25.5"),
 		retained: false,
 	};
 	
 	const result = formatMessageLine(msg);
-	assertEquals(result.prefix, "sensors/temperature\t-\t");
-	assertEquals(result.content, new TextEncoder().encode("25.5"));
+	assertEquals(result, encode("sensors/temperature\t-\t25.5"));
 });
 
 Deno.test("formatMessageLine - formats retained message correctly", () => {
 	const msg: MQTTMessage = {
 		timestamp: 1234567890000,
 		path: "sensors/humidity",
-		value: new TextEncoder().encode("60"),
+		value: encode("60"),
 		retained: true,
 	};
 	
 	const result = formatMessageLine(msg);
-	assertEquals(result.prefix, "sensors/humidity\tR\t");
-	assertEquals(result.content, new TextEncoder().encode("60"));
+	assertEquals(result, encode("sensors/humidity\tR\t60"));
 });
 
 Deno.test("formatMessageLine - encodes content with newlines", () => {
 	const msg: MQTTMessage = {
 		timestamp: 1234567890000,
 		path: "logs/system",
-		value: new TextEncoder().encode("Line 1\nLine 2"),
+		value: encode("Line 1\nLine 2"),
 		retained: false,
 	};
 	
 	const result = formatMessageLine(msg);
-	assertEquals(result.prefix, "logs/system\t-\t");
+	assertEquals(result, encode("logs/system\t-\tLine 1\n\tLine 2"));
 	// Content should have newlines replaced with newline+tab
-	const expectedContent = new TextEncoder().encode("Line 1\n\tLine 2");
-	assertEquals(result.content, expectedContent);
+	const expectedContent = encode("Line 1\n\tLine 2");
 });
 
 Deno.test("formatMessageLine - handles zero-length messages", () => {
@@ -87,8 +90,7 @@ Deno.test("formatMessageLine - handles zero-length messages", () => {
 	};
 	
 	const result = formatMessageLine(msg);
-	assertEquals(result.prefix, "empty/topic\t-\t");
-	assertEquals(result.content.length, 0);
+	assertEquals(result, encode("empty/topic\t-\t"));
 });
 
 Deno.test("formatMessageLine - handles binary content", () => {
@@ -101,8 +103,7 @@ Deno.test("formatMessageLine - handles binary content", () => {
 	};
 	
 	const result = formatMessageLine(msg);
-	assertEquals(result.prefix, "binary/data\t-\t");
-	assertEquals(result.content, binaryData);
+	assertEquals(result, concatUint8Arrays(encode("binary/data\t-\t"), binaryData));
 });
 
 Deno.test("formatMessageLine - handles binary content with newlines", () => {
@@ -116,43 +117,68 @@ Deno.test("formatMessageLine - handles binary content with newlines", () => {
 	};
 	
 	const result = formatMessageLine(msg);
-	assertEquals(result.prefix, "test/binary\t-\t");
 	// Should have newline replaced with newline+tab
-	const expectedContent = new Uint8Array([0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x0a, 0x09, 0x57, 0x6f, 0x72, 0x6c, 0x64]);
-	assertEquals(result.content, expectedContent);
+	assertEquals(
+		result,
+		concatUint8Arrays(
+			encode("test/binary\t-\t"),
+			new Uint8Array([0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x0a, 0x09, 0x57, 0x6f, 0x72, 0x6c, 0x64]),
+		),
+	);
 });
 
 Deno.test("formatMessageLine - handles paths with special characters", () => {
 	const msg: MQTTMessage = {
 		timestamp: 1234567890000,
 		path: "devices/device-123/sub/sensor",
-		value: new TextEncoder().encode("value"),
+		value: encode("value"),
 		retained: false,
 	};
 	
 	const result = formatMessageLine(msg);
-	assertEquals(result.prefix, "devices/device-123/sub/sensor\t-\t");
+	assertEquals(result, encode("devices/device-123/sub/sensor\t-\tvalue"));
 });
+
+function concatUint8Arrays(...arrays: Uint8Array[]): Uint8Array {
+	const totalLength = arrays.reduce((sum, arr) => sum + arr.length, 0);
+	const result = new Uint8Array(totalLength);
+	let offset = 0;
+	for (const arr of arrays) {
+		result.set(arr, offset);
+		offset += arr.length;
+	}
+	return result;
+}
 
 // Parameterized test for various message types
 const messageTestCases = [
 	{
 		path: "simple/path",
-		value: "simple value",
+		value: encode("simple value"),
 		retained: false,
 		description: "simple text message",
+		expectedEncodedContent: encode("simple/path\t-\tsimple value"),
 	},
 	{
 		path: "multi/line",
-		value: "Line 1\nLine 2\nLine 3",
+		value: encode("Line 1\nLine 2\nLine 3"),
 		retained: true,
 		description: "multi-line retained message",
+		expectedEncodedContent: encode("multi/line\tR\tLine 1\n\tLine 2\n\tLine 3"),
 	},
 	{
 		path: "empty/value",
-		value: "",
+		value: encode(""),
 		retained: false,
 		description: "empty message",
+		expectedEncodedContent: encode("empty/value\t-\t"), // No trailing tab needed when content is empty, but to keep things simple for now...
+	},
+	{
+		path: "binary/data",
+		value: new Uint8Array([0x00, 0x01, 0x02, 0x03, 0x04]),
+		retained: false,
+		description: "binary message",
+		expectedEncodedContent: concatUint8Arrays(encode("binary/data\t-\t"), new Uint8Array([0x00, 0x01, 0x02, 0x03, 0x04])),
 	},
 ];
 
@@ -161,17 +187,16 @@ for (const testCase of messageTestCases) {
 		const msg: MQTTMessage = {
 			timestamp: 1234567890000,
 			path: testCase.path,
-			value: new TextEncoder().encode(testCase.value),
+			value: testCase.value,
 			retained: testCase.retained,
 		};
 		
 		const result = formatMessageLine(msg);
 		const expectedFlags = testCase.retained ? "R" : "-";
-		assertEquals(result.prefix, `${testCase.path}\t${expectedFlags}\t`);
 		
-		// Check content encoding
-		const expectedValue = testCase.value.replace(/\n/g, "\n\t");
-		const expectedContent = new TextEncoder().encode(expectedValue);
-		assertEquals(result.content, expectedContent);
+		
+		// Check content encoding - use encodeContent to get expected result
+		const expectedContent = encodeContent(testCase.value);
+		assertEquals(result, testCase.expectedEncodedContent);
 	});
 }
