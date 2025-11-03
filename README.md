@@ -143,16 +143,4 @@ sudo usermod -aG docker $USER
 
 ### Open in Devcontainer
 
-> VS Code/Cursor automatically detects Docker in WSL when you're working
-> from a WSL path or have WSL integration enabled.
-
-Said some LLM.  But I HAVE NOT BEEN ABLE TO GET THIS TO WORK IN CURSOR.
-
-I can get it to work within WSL, but I have not gotten it to work
-within a Docker container within WSL or using Docker Desktop,
-which may be different.
-
-Note that this is a little bit different than in vanilla VS Code,
-where I did [at some point](https://github.com/TOGoS/Scratch38/tree/subtrees/s0021/master)
-get a devcontainer working, apparently running inside Docker
-inside WSL.  Cursor has its own, slightly different extensions for this.
+This was messy. I'm not sure what steps were necessary. See DEVLOG.
